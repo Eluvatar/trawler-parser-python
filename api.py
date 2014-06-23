@@ -1,12 +1,42 @@
+#   Copyright 2013 Eluvatar
+#
+#   This file is part of Trawler.
+#
+#   Trawler is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   Trawler is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with Trawler.  If not, see <http://www.gnu.org/licenses/>.
+
+"""
+  This module defines a python interface wrapping the trawler client for the
+  purposes of accessing the NationStates API. 
+
+  his interface provides a request method which returns takes a dict object 
+  defining the API parameters and returns an ElementTree object or throws an 
+  exception. If the API returned a 404, it will throw a CTE exception.
+  
+  api.user_agent MUST be set prior to calling the request method.
+"""
+
 import xml.etree.ElementTree as ET
 from xml.parsers.expat import ExpatError as EE
+from xml.etree.ElementTree import ParseError as PE
 import client.trawler as trawler
 import logging
+import io
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-def api_request(query,log=False):
+def request(query,log=False):
     """ requests information from the NS API using trawler
         defaults to using version 4 """
     if 'v' in query:
@@ -22,10 +52,12 @@ def api_request(query,log=False):
     if log:
         logger.debug("GET %s?%s -> %d", path, query, res.result)
     if( res.result == 200 ):
+        utfstr = unicode(res.read(),'windows-1252')
+        xmlstr = utfstr.encode('ascii','xmlcharrefreplace')
         try:
-            return ET.parse(res)
-        except EE:
-            __handle_ee(path, res)
+            return ET.fromstring(xmlstr)
+        except (EE,PE):
+            __handle_ee(query, res)
             raise
     elif( res.result == 404 ):
         if 'nation' in query:
@@ -43,8 +75,8 @@ class CTE(Exception):
     def __str__(self):
         return repr(self.value)
 
-def __handle_ee(path,res):
-    logger.error("api_request of %s failed to parse",path)
+def __handle_ee(query,res):
+    logger.error("api.request of %s failed to parse",query)
     if logger.isEnabledFor(logging.DEBUG):
         logger.debug("---begin---")
         logger.debug(res.read())
