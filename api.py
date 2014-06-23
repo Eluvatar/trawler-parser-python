@@ -45,19 +45,19 @@ def request(query,log=False):
         query['v']='5'
     qs = map(lambda k: k+"="+(query[k] if isinstance(query[k],basestring) else "+".join(query[k])), query)
     path = "/cgi-bin/api.cgi"
-    query = "&".join(qs)
+    querystr = "&".join(qs)
     if log:
-        logger.debug("GET %s?%s", path, query)
-    res = __connection().request('GET',path,query)
+        logger.debug("GET %s?%s", path, querystr)
+    res = __connection().request('GET',path,querystr)
     if log:
-        logger.debug("GET %s?%s -> %d", path, query, res.result)
+        logger.debug("GET %s?%s -> %d", path, querystr, res.result)
     if( res.result == 200 ):
         utfstr = unicode(res.read(),'windows-1252')
         xmlstr = utfstr.encode('ascii','xmlcharrefreplace')
         try:
             return ET.fromstring(xmlstr)
         except (EE,PE):
-            __handle_ee(query, res)
+            __handle_ee(querystr, res)
             raise
     elif( res.result == 404 ):
         if 'nation' in query:
