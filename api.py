@@ -38,11 +38,11 @@ logger.setLevel(logging.DEBUG)
 
 def request(query,log=False):
     """ requests information from the NS API using trawler
-        defaults to using version 4 """
+        defaults to using version 5 (the latest when this code was written) """
     if 'v' in query:
         query['v'] = str(query['v'])
     else:
-        query['v']='4'
+        query['v']='5'
     qs = map(lambda k: k+"="+(query[k] if isinstance(query[k],basestring) else "+".join(query[k])), query)
     path = "/cgi-bin/api.cgi"
     query = "&".join(qs)
