@@ -65,13 +65,21 @@ def request(query,log=False):
         elif 'region' in query:
             raise CTE(query['region'])
         else:
-            raise res
+            raise ApiError(res)
     else:
-        raise res
+        raise ApiError(res)
 
 class CTE(Exception):
     def __init__(self, value):
         self.value = value
+    def __str__(self):
+        return repr(self.value)
+
+class ApiError(Exception):
+    def __init__(self, value):
+        self.value = value
+        self.result = value.result
+        self.read = value.read
     def __str__(self):
         return repr(self.value)
 
