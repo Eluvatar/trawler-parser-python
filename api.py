@@ -48,11 +48,15 @@ def request(query,log=False):
     querystr = "&".join(qs)
     if log:
         logger.debug("GET %s?%s", path, querystr)
-    res = __connection().request('GET',path,querystr)
+    res = __connection().request('GET', path, querystr)
     if log:
         logger.debug("GET %s?%s -> %d", path, querystr, res.result)
     if( res.result == 200 ):
-        utfstr = unicode(res.read(),'windows-1252')
+        try:
+            utfstr = unicode(res.read(),'windows-1252')
+        except UnicodeDecodeError err:
+            logger.error("GET %s?%s -> %d:", path, querystr, res.result)
+            logger.error("%s",res.read())
         xmlstr = utfstr.encode('ascii','xmlcharrefreplace')
         try:
             return ET.fromstring(xmlstr)
