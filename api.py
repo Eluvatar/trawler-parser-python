@@ -52,10 +52,8 @@ def request(query,log=False):
     if log:
         logger.debug("GET %s?%s -> %d", path, querystr, res.result)
     if( res.result == 200 ):
-        utfstr = unicode(res.read(),'windows-1252')
-        xmlstr = utfstr.encode('ascii','xmlcharrefreplace')
         try:
-            return ET.fromstring(xmlstr)
+            return ET.parse(res)
         except (EE,PE):
             __handle_ee(querystr, res)
             raise
@@ -81,14 +79,17 @@ class ApiError(Exception):
         self.result = value.result
         self.read = value.read
     def __str__(self):
-        return repr(self.value)
+        return ("Api Error %d:"%self.result)+repr(self.value)
 
 def __handle_ee(query,res):
     logger.error("api.request of %s failed to parse",query)
     if logger.isEnabledFor(logging.DEBUG):
         logger.debug("---begin---")
+        res.seek(0)
         logger.debug(res.read())
         logger.debug("---end---")
+        for reply in res.replies:
+            print reply
         del res
     else:
         res.read()
