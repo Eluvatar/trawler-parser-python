@@ -48,12 +48,14 @@ def request(query,log=False):
     querystr = "&".join(qs)
     if log:
         logger.debug("GET %s?%s", path, querystr)
-    res = __connection().request('GET',path,querystr)
+    res = __connection().request('GET',path,querystr,headers=True)
     if log:
         logger.debug("GET %s?%s -> %d", path, querystr, res.result)
     if( res.result == 200 ):
         try:
-            return ET.parse(res)
+            xml = ET.parse(res)
+            xml.headers = res.info()
+            return xml
         except (EE,PE):
             __handle_ee(querystr, res)
             raise
