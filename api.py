@@ -1,4 +1,4 @@
-#   Copyright 2013 Eluvatar
+#   Copyright 2014 Eluvatar
 #
 #   This file is part of Trawler.
 #
@@ -36,7 +36,7 @@ import io
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-def request(query,log=False):
+def request(query,header=False,log=False):
     """ requests information from the NS API using trawler
         defaults to using version 5 (the latest when this code was written) """
     if 'v' in query:
@@ -52,12 +52,15 @@ def request(query,log=False):
     if log:
         logger.debug("GET %s?%s -> %d", path, querystr, res.result)
     if( res.result == 200 ):
+        if 'a' in query and query['a'] == 'sendTG':
+            # Why does this have to be plaintext and not XML? :(
+            return res.read()
         try:
             xml = ET.parse(res)
             xml.headers = res.info()
             return xml
         except (EE,PE):
-            __handle_ee(querystr, res)
+            _handle_parse_error(querystr, res)
             raise
     elif( res.result == 404 ):
         if 'nation' in query:
@@ -83,7 +86,7 @@ class ApiError(Exception):
     def __str__(self):
         return ("Api Error %d:"%self.result)+repr(self.value)
 
-def __handle_ee(query,res):
+def _handle_parse_error(query,res):
     logger.error("api.request of %s failed to parse",query)
     if logger.isEnabledFor(logging.DEBUG):
         logger.debug("---begin---")
