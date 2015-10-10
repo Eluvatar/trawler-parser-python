@@ -1,4 +1,4 @@
-#   Copyright 2014 Eluvatar
+#   Copyright 2013-2015 Eluvatar
 #
 #   This file is part of Trawler.
 #
@@ -32,13 +32,16 @@ from xml.etree.ElementTree import ParseError as PE
 import client.trawler as trawler
 import logging
 import io
+from time import sleep
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-def request(query,header=False,log=False):
+def request(query,header=False,log=False,retries=5,backoff=0.0):
     """ requests information from the NS API using trawler
         defaults to using version 5 (the latest when this code was written) """
+    if retries<0:
+        return None
     if 'v' in query:
         query['v'] = str(query['v'])
     else:
@@ -69,6 +72,12 @@ def request(query,header=False,log=False):
             raise CTE(query['region'])
         else:
             raise ApiError(res)
+    elif( res.result == 0 or (res.result >= 500 and res.result < 600)):
+        sleep(backoff)
+        backoff = backoff * 2 if backoff > 0 else 1.0
+        xml = request(query, header, log, retries-1, backoff)
+        if xml is None:
+            raise ApiError(res)
     else:
         raise ApiError(res)
 
@@ -93,8 +102,8 @@ def _handle_parse_error(query,res):
         res.seek(0)
         logger.debug(res.read())
         logger.debug("---end---")
-        for reply in res.replies:
-            print reply
+#        for reply in res.replies:
+#            print reply
         del res
     else:
         res.read()
