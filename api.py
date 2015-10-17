@@ -32,6 +32,7 @@ from xml.etree.ElementTree import ParseError as PE
 import client.trawler as trawler
 import logging
 import io
+from urllib import urlencode
 from time import sleep
 
 logger = logging.getLogger(__name__)
@@ -45,10 +46,9 @@ def request(query,header=False,log=False,retries=5,backoff=0.0):
     if 'v' in query:
         query['v'] = str(query['v'])
     else:
-        query['v']='5'
-    qs = map(lambda k: k+"="+(query[k] if isinstance(query[k],basestring) else "+".join(query[k])), query)
+        query['v']='7'
     path = "/cgi-bin/api.cgi"
-    querystr = "&".join(qs)
+    querystr = urlencode(query)
     if log:
         logger.debug("GET %s?%s", path, querystr)
     res = __connection().request('GET',path,querystr,headers=True)
