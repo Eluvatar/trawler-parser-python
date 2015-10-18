@@ -43,8 +43,8 @@ api.user_agent = PUT SOMETHING HERE
 
 ```python
 def get_region_wa_nations(region):
-    region_nations = frozenset(api.request({'region':nation,'q':['nations']}).find("NATIONS").text.split(":"))
-    wa_nations = frozenset(api.request({'wa':'1','q':['members']]).find("MEMBERS").text.split(","))
+    region_nations = frozenset(api.request({'region':region,'q':['nations']}).find("NATIONS").text.split(":"))
+    wa_nations = frozenset(api.request({'wa':'1','q':['members']}).find("MEMBERS").text.split(","))
     return region_nations & wa_nations
 ```
 
