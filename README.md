@@ -7,8 +7,9 @@ python parser library for using the Trawler service to throttle one's automated 
 
 1. You must set `api.user_agent`, in accordance with [the API terms of Use](https://www.nationstates.net/pages/api.html#terms).
 2. You must have a [trawler daemon](https://github.com/Eluvatar/trawler-daemon-c) running (this necessitates installing its dependencies).
-3. You must also have `protoc-python` to compile the protocol buffer definitions used to talk to the daemon in the client submodule.
-4. You must check out the submodules.
+3. You must also have `protoc-python` to compile the protocol buffer definitions used to talk to the daemon in the client submodule.  i.e. `aptitude install protobuf-compiler python-protobuf` or `dnf install protobuf-compiler protobuf-python`
+4. You must also have `python-zmq` to talk to the trawler daemon. e.g. `pip install pyzmq` (If installing through pip and not your distribution, you may need to also install `python-dev` or `python-devel`).
+5. You must check out the submodules.
 
 Going through the steps:
 
