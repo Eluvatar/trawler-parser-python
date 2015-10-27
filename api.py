@@ -74,7 +74,7 @@ def request(query,header=False,log=False,retries=5,backoff=0.0):
             raise CTE(query['region'])
         else:
             raise ApiError(res)
-    elif( res.result == 0 or (res.result >= 500 and res.result < 600)):
+    elif( res.result == 0 or (res.result >= 500 and res.result < 600) or res.result == 508 ):
         sleep(backoff)
         backoff = backoff * 2 if backoff > 0 else 1.0
         xml = request(query, header, log, retries-1, backoff)
