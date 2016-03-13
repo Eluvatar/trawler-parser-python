@@ -48,8 +48,11 @@ def request(query,header=False,log=False,retries=5,backoff=0.0):
     else:
         query['v']='7'
     path = "/cgi-bin/api.cgi"
-    if 'q' in query and not isinstance(query['q'],basestring):
-        query['q'] = "+".join(query['q'])
+    for k in query:
+        if isinstance(query[k],int):
+            query[k] = str(query[k])
+        elif not isinstance(query[k],basestring):
+            query[k] = "+".join(query[k])
     querystr = urlencode(query)
     if log:
         logger.debug("GET %s?%s", path, querystr)
