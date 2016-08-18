@@ -56,7 +56,8 @@ def request(query,header=False,log=False,retries=5,backoff=0.0):
     querystr = urlencode(query)
     if log:
         logger.debug("GET %s?%s", path, querystr)
-    res = __connection().request('GET',path,querystr,headers=True)
+    conn = __connection()
+    res = conn.request('GET',path,querystr,headers=True)
     if log:
         logger.debug("GET %s?%s -> %d", path, querystr, res.result)
     if( res.result == 200 ):
@@ -66,6 +67,12 @@ def request(query,header=False,log=False,retries=5,backoff=0.0):
         try:
             xml = ET.parse(res)
             xml.headers = res.info()
+            if xml is None:
+                sleep(backoff)
+                backoff = backoff * 2 if backoff > 0 else 1.0
+                xml = request(query, header, log, retries-1, backoff)
+                if xml is None:
+                    raise ApiError(res)
             return xml
         except (EE,PE):
             _handle_parse_error(querystr, res)
@@ -77,12 +84,13 @@ def request(query,header=False,log=False,retries=5,backoff=0.0):
             raise CTE(query['region'])
         else:
             raise ApiError(res)
-    elif( res.result == 0 or (res.result >= 500 and res.result < 600) or res.result == 508 ):
+    elif( res.result == 0 or res.result == 408 or (res.result >= 500 and res.result < 600) or res.result == 508 ):
         sleep(backoff)
         backoff = backoff * 2 if backoff > 0 else 1.0
         xml = request(query, header, log, retries-1, backoff)
         if xml is None:
             raise ApiError(res)
+        return xml
     else:
         raise ApiError(res)
 
